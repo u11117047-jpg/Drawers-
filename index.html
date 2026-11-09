@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎨 ピクセルおえかき！像素你畫我猜</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Dela Gothic One & M PLUS Rounded 1c -->
+    <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=M+PLUS+Rounded+1c:wght@500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'M PLUS Rounded 1c', sans-serif;
+            background: linear-gradient(135deg, #fff1f2 0%, #fef3c7 35%, #ecfdf5 70%, #eff6ff 100%);
+            min-height: 100vh;
+        }
+        .pixel-title {
+            font-family: 'Dela Gothic One', cursive;
+        }
+        /* Chunky Pixel 3D Box Shadow Borders */
+        .chunky-box {
+            border: 4px solid #1e293b;
+            box-shadow: 5px 5px 0px #1e293b;
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+        }
+        .chunky-box-sm {
+            border: 3px solid #1e293b;
+            box-shadow: 3px 3px 0px #1e293b;
+        }
+        .chunky-btn {
+            border: 3px solid #1e293b;
+            box-shadow: 4px 4px 0px #1e293b;
+            transition: all 0.08s ease;
+        }
+        .chunky-btn:hover {
+            transform: translate(-1px, -1px);
+            box-shadow: 5px 5px 0px #1e293b;
+        }
+        .chunky-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0px #1e293b;
+        }
+        .canvas-container {
+            touch-action: none;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-left: 3px solid #1e293b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border: 2px solid #1e293b;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="text-slate-800 flex flex-col min-h-screen selection:bg-pink-200">
+
+    <!-- Header -->
+    <header class="bg-white/90 backdrop-blur-md border-b-4 border-slate-900 py-3 px-6 flex justify-between items-center sticky top-0 z-50">
+        <div class="flex items-center space-x-3">
+            <div class="bg-pink-400 text-white p-2 rounded-xl chunky-box-sm font-black text-xl flex items-center justify-center w-11 h-11 shadow-none transform -rotate-3">
+                ⭐
+            </div>
+            <div>
+                <h1 class="text-xl font-black pixel-title bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-600 bg-clip-text text-transparent">像素你畫我猜</h1>
+                <p class="text-xs font-bold text-slate-400">✨ 雙人與多人即時連線塗鴉樂園 ✨</p>
+            </div>
+        </div>
+        <div id="userInfoBadge" class="hidden items-center space-x-2 bg-amber-100 px-4 py-1.5 rounded-full chunky-box-sm text-sm font-bold text-amber-800">
+            <span class="w-3 h-3 rounded-full bg-emerald-400 border-2 border-slate-900 animate-pulse"></span>
+            <span id="displayMyName">玩家</span>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-grow flex items-center justify-center p-4 max-w-6xl mx-auto w-full">
+
+        <!-- VIEW 1: Welcome & Room Creation -->
+        <div id="viewWelcome" class="w-full max-w-md bg-white rounded-3xl chunky-box p-8 text-center transition-all duration-300 relative overflow-hidden">
+            <!-- Decorative floating pixel stars -->
+            <div class="absolute -top-4 -left-4 text-3xl animate-bounce">🍓</div>
+            <div class="absolute top-6 -right-2 text-2xl animate-pulse">⭐</div>
+            
+            <div class="w-24 h-24 bg-pink-100 rounded-2xl chunky-box flex items-center justify-center mx-auto mb-6 text-5xl shadow-none transform rotate-3">
+                🎨
+            </div>
+            <h2 class="text-2xl font-black pixel-title text-slate-800 mb-2">準備好一起作畫了嗎？</h2>
+            <p class="text-xs font-bold text-slate-400 mb-6">輸入可愛暱稱，即可一秒建立房間或輸入房間碼！</p>
+
+            <div class="space-y-4 text-left">
+                <div>
+                    <label class="block text-xs font-black text-slate-600 uppercase tracking-wider mb-1">🐾 您的專屬暱稱</label>
+                    <input type="text" id="inputName" placeholder="例如：草莓醬小貓" maxlength="12" class="w-full px-4 py-3 rounded-xl chunky-box-sm focus:outline-none focus:ring-2 focus:ring-pink-400 font-bold bg-pink-50/50">
+                </div>
+
+                <div class="pt-2 space-y-4">
+                    <button id="btnCreateRoom" onclick="createRoom()" class="w-full bg-gradient-to-r from-pink-400 to-rose-400 hover:from-pink-500 hover:to-rose-500 text-white font-black py-4 px-6 rounded-xl chunky-btn text-base flex items-center justify-center space-x-2">
+                        <span>🏠</span><span>建立新房間 (2人以上即可玩)</span>
+                    </button>
+                    
+                    <div class="relative flex py-2 items-center">
+                        <div class="flex-grow border-t-2 border-dashed border-slate-300"></div>
+                        <span class="flex-shrink mx-3 text-xs text-slate-400 font-black uppercase">或者加入好友</span>
+                        <div class="flex-grow border-t-2 border-dashed border-slate-300"></div>
+                    </div>
+
+                    <div class="flex space-x-2">
+                        <input type="text" id="inputRoomCode" placeholder="4碼房號" maxlength="6" class="uppercase flex-grow px-4 py-3 rounded-xl chunky-box-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 font-black tracking-widest text-center bg-indigo-50/50">
+                        <button onclick="joinRoom()" class="bg-indigo-400 hover:bg-indigo-500 text-white font-black px-6 py-3 rounded-xl chunky-btn">
+                            加入
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 2: Waiting Lobby -->
+        <div id="viewLobby" class="hidden w-full max-w-lg bg-white rounded-3xl chunky-box p-8 text-center transition-all duration-300 relative">
+            <div class="absolute -top-3 -right-3 text-3xl animate-bounce">☁️</div>
+
+            <div class="inline-block bg-indigo-50 chunky-box-sm rounded-2xl px-6 py-3 mb-6 transform -rotate-1">
+                <span class="text-xs text-indigo-500 font-black uppercase block mb-1">🎮 房間邀請碼</span>
+                <span id="displayRoomCode" class="text-3xl font-black pixel-title text-indigo-600 tracking-widest">----</span>
+                <button onclick="copyRoomCode()" class="block mx-auto mt-1 text-xs text-indigo-500 font-bold hover:underline">📋 點擊複製房號傳給朋友</button>
+            </div>
+
+            <h3 class="text-base font-black text-slate-800 mb-3">🐰 房間內的小夥伴 (<span id="playerCount">0</span>)</h3>
+            <div id="playersList" class="space-y-2.5 mb-8 max-h-48 overflow-y-auto px-1">
+                <!-- Players inserted here -->
+            </div>
+
+            <div id="hostControls" class="hidden space-y-3">
+                <button onclick="startGame()" class="w-full bg-emerald-400 hover:bg-emerald-500 text-white font-black py-4 px-6 rounded-2xl chunky-btn text-lg flex items-center justify-center space-x-2">
+                    <span>🚀</span><span>開始遊戲 (GO!)</span>
+                </button>
+                <p class="text-xs font-bold text-slate-400">房主隨時可點擊開始，雙人即可立即開局！</p>
+            </div>
+            <div id="guestWaiting" class="text-indigo-500 text-sm py-3 font-black animate-pulse">
+                ⏳ 等待房主按下開始遊戲中...
+            </div>
+        </div>
+
+        <!-- VIEW 3: Game Room -->
+        <div id="viewGame" class="hidden w-full grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            <!-- Left Column: Canvas & Tools (7 cols) -->
+            <div class="lg:col-span-7 bg-white rounded-3xl chunky-box p-5 flex flex-col">
+                <!-- Game Status Header -->
+                <div class="flex justify-between items-center mb-4 bg-pink-50/60 px-4 py-3 rounded-2xl chunky-box-sm">
+                    <div>
+                        <span class="text-xs font-black text-pink-600 uppercase tracking-wide">🌟 第 <span id="currentRoundText">1</span> / <span id="maxRoundText">5</span> 回合</span>
+                        <div id="wordDisplay" class="text-lg font-black pixel-title text-slate-800 tracking-wider mt-0.5">載入中...</div>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs font-black text-amber-600 uppercase tracking-wide">⏰ 剩餘時間</span>
+                        <div id="timerDisplay" class="text-2xl font-black pixel-title text-rose-500">60s</div>
+                    </div>
+                </div>
+
+                <!-- Canvas Area -->
+                <div class="relative w-full aspect-[4/3] bg-white border-4 border-slate-900 rounded-2xl overflow-hidden shadow-inner canvas-container">
+                    <canvas id="paintCanvas" class="w-full h-full cursor-crosshair"></canvas>
+                    
+                    <!-- Overlay for non-painters -->
+                    <div id="notPainterOverlay" class="absolute inset-0 bg-slate-900/50 backdrop-blur-[2px] flex items-center justify-center hidden">
+                        <div class="bg-white/95 chunky-box-sm px-6 py-4 rounded-2xl text-slate-800 font-black text-center shadow-xl">
+                            <div class="text-3xl mb-1 animate-bounce">👀</div>
+                            <span id="currentPainterName" class="text-indigo-600">某人</span> 正在努力作畫中，快猜答案！
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Painter Tools -->
+                <div id="painterTools" class="mt-4 flex flex-wrap items-center justify-between gap-3 bg-slate-50 p-3 rounded-2xl chunky-box-sm">
+                    <div class="flex items-center space-x-2">
+                        <button onclick="setBrushColor('#1e293b')" class="w-8 h-8 rounded-lg bg-slate-900 border-2 border-slate-900 shadow hover:scale-110 transition-transform color-btn"></button>
+                        <button onclick="setBrushColor('#f43f5e')" class="w-8 h-8 rounded-lg bg-rose-500 border-2 border-slate-900 shadow hover:scale-110 transition-transform color-btn"></button>
+                        <button onclick="setBrushColor('#3b82f6')" class="w-8 h-8 rounded-lg bg-blue-500 border-2 border-slate-900 shadow hover:scale-110 transition-transform color-btn"></button>
+                        <button onclick="setBrushColor('#10b981')" class="w-8 h-8 rounded-lg bg-emerald-500 border-2 border-slate-900 shadow hover:scale-110 transition-transform color-btn"></button>
+                        <button onclick="setBrushColor('#f59e0b')" class="w-8 h-8 rounded-lg bg-amber-500 border-2 border-slate-900 shadow hover:scale-110 transition-transform color-btn"></button>
+                        <button onclick="setBrushColor('#a855f7')" class="w-8 h-8 rounded-lg bg-purple-500 border-2 border-slate-900 shadow hover:scale-110 transition-transform color-btn"></button>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <select id="brushSize" onchange="setBrushSize(this.value)" class="text-xs font-black bg-white chunky-box-sm rounded-xl px-3 py-2 focus:outline-none cursor-pointer">
+                            <option value="3">細筆 ✏️</option>
+                            <option value="7" selected>中筆 🖌️</option>
+                            <option value="15">粗筆 🖍️</option>
+                            <option value="28">特粗 🎨</option>
+                        </select>
+                        <button onclick="clearCanvasAction()" class="bg-rose-100 hover:bg-rose-200 text-rose-600 font-black px-4 py-2 rounded-xl text-xs chunky-btn transition-all">🗑️ 清空</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Scores & Chat (5 cols) -->
+            <div class="lg:col-span-5 bg-white rounded-3xl chunky-box p-5 flex flex-col h-[600px] lg:h-[calc(100vh-140px)]">
+                <!-- Scoreboard -->
+                <div class="mb-4">
+                    <h4 class="text-xs font-black text-slate-400 uppercase tracking-wider mb-2 flex items-center justify-between">
+                        <span>🏆 排行榜</span>
+                        <span class="text-pink-500">✨</span>
+                    </h4>
+                    <div id="scoreboardList" class="space-y-2 max-h-36 overflow-y-auto pr-1">
+                        <!-- Score items -->
+                    </div>
+                </div>
+
+                <div class="border-t-2 border-dashed border-slate-200 my-2"></div>
+
+                <!-- Chat / Guessing Log -->
+                <div class="flex-grow flex flex-col overflow-hidden">
+                    <h4 class="text-xs font-black text-slate-400 uppercase tracking-wider mb-2">💬 聊天與猜答案</h4>
+                    <div id="chatMessages" class="flex-grow bg-slate-50 chunky-box-sm rounded-2xl p-3 overflow-y-auto space-y-2 mb-3 text-sm">
+                        <!-- Messages inserted here -->
+                    </div>
+
+                    <!-- Input Box -->
+                    <div class="flex space-x-2">
+                        <input type="text" id="inputGuess" onkeypress="handleGuessKey(event)" placeholder="輸入答案或聊天..." class="flex-grow px-4 py-3 rounded-xl chunky-box-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm font-bold bg-indigo-50/30">
+                        <button onclick="sendGuess()" class="bg-indigo-500 hover:bg-indigo-600 text-white font-black px-5 py-3 rounded-xl chunky-btn text-sm">送出</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Custom Modal Popup -->
+    <div id="customModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 hidden p-4">
+        <div class="bg-white rounded-3xl chunky-box p-6 max-w-sm w-full text-center relative overflow-hidden">
+            <div class="absolute -top-3 -right-3 text-3xl animate-bounce">✨</div>
+            <div id="modalIcon" class="text-5xl mb-3">🎉</div>
+            <h3 id="modalTitle" class="text-xl font-black pixel-title text-slate-800 mb-2">提示</h3>
+            <p id="modalDesc" class="text-sm font-bold text-slate-600 mb-6">內容訊息...</p>
+            <button onclick="closeModal()" class="w-full bg-pink-400 hover:bg-pink-500 text-white font-black py-3.5 rounded-2xl chunky-btn text-base">確定 (OK)</button>
+        </div>
+    </div>
+
+    <!-- Firebase SDK Imports & Robust Initialization -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        window.firebaseApp = null;
+        window.db = null;
+        window.auth = null;
+        window.userId = null;
+        window.firebaseReadyPromise = (async () => {
+            try {
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-skribbl-app';
+                const firebaseConfig = JSON.parse(__firebase_config);
+                window.firebaseApp = initializeApp(firebaseConfig);
+                window.db = getFirestore(window.firebaseApp);
+                window.auth = getAuth(window.firebaseApp);
+
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(window.auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(window.auth);
+                }
+                window.userId = window.auth.currentUser ? window.auth.currentUser.uid : 'user_' + Math.random().toString(36).substring(2, 9);
+                console.log("Firebase initialized successfully. User ID:", window.userId);
+            } catch (e) {
+                console.error("Firebase init error, using fallback ID:", e);
+                window.userId = 'user_' + Math.random().toString(36).substring(2, 9);
+            }
+        })();
+    </script>
+
+    <!-- Main Game Logic Script -->
+    <script>
+        let myName = "";
+        let currentRoomId = null;
+        let isHost = false;
+        let roomUnsubscribe = null;
+        let strokesUnsubscribe = null;
+        let chatsUnsubscribe = null;
+
+        let roomData = null;
+        let canvas, ctx;
+        let isDrawing = false;
+        let lastX = 0, lastY = 0;
+        let currentBrushColor = "#1e293b";
+        let currentBrushSize = 7;
+
+        const WORD_POOL = [
+            "蘋果", "香蕉", "大象", "企鵝", "飛機", "腳踏車", "城堡", "漢堡", 
+            "冰淇淋", "太陽眼鏡", "機器人", "恐龍", "吉他", "筆記型電腦", 
+            "游泳池", "聖誕樹", "足球", "貓咪", "狗狗", "月亮", "太陽", "雨傘",
+            "草莓", "起司", "星星", "火箭", "烏龜", "蛋糕", "熊貓", "雪人"
+        ];
+
+        function switchView(viewName) {
+            document.getElementById('viewWelcome').classList.add('hidden');
+            document.getElementById('viewLobby').classList.add('hidden');
+            document.getElementById('viewGame').classList.add('hidden');
+
+            if (viewName === 'welcome') document.getElementById('viewWelcome').classList.remove('hidden');
+            if (viewName === 'lobby') document.getElementById('viewLobby').classList.remove('hidden');
+            if (viewName === 'game') document.getElementById('viewGame').classList.remove('hidden');
+        }
+
+        function showModal(title, desc, icon = "🎨") {
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalDesc').innerText = desc;
+            document.getElementById('modalIcon').innerText = icon;
+            document.getElementById('customModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('customModal').classList.add('hidden');
+        }
+
+        function generateRoomCode() {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let code = '';
+            for (let i = 0; i < 4; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return code;
+        }
+
+        async function createRoom() {
+            const nameInput = document.getElementById('inputName').value.trim();
+            if (!nameInput) {
+                showModal("請輸入暱稱", "請先輸入您的可愛暱稱才能建立房間！", "🍓");
+                return;
+            }
+            myName = nameInput;
+            document.getElementById('displayMyName').innerText = myName;
+            document.getElementById('userInfoBadge').classList.remove('hidden');
+
+            // Ensure Firebase is ready or fallback gracefully
+            if (window.firebaseReadyPromise) {
+                await window.firebaseReadyPromise;
+            }
+            if (!window.userId) {
+                window.userId = 'user_' + Math.random().toString(36).substring(2, 9);
+            }
+
+            currentRoomId = generateRoomCode();
+            isHost = true;
+
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-skribbl-app';
+            
+            const initialPlayers = {};
+            initialPlayers[window.userId] = {
+                name: myName,
+                score: 0,
+                isHost: true
+            };
+
+            try {
+                if (window.db) {
+                    const roomRef = doc(window.db, 'artifacts', appId, 'public', 'data', 'rooms_' + currentRoomId);
+                    await setDoc(roomRef, {
+                        roomId: currentRoomId,
+                        status: 'waiting',
+                        hostId: window.userId,
+                        players: initialPlayers,
+                        currentRound: 1,
+                        maxRounds: 5,
+                        painterId: window.userId,
+                        word: '',
+                        hint: ''
+                    });
+                    listenToRoom(currentRoomId);
+                }
+
+                document.getElementById('displayRoomCode').innerText = currentRoomId;
+                document.getElementById('hostControls').classList.remove('hidden');
+                document.getElementById('guestWaiting').classList.add('hidden');
+                switchView('lobby');
+            } catch (e) {
+                console.error("Error creating room:", e);
+                // Fallback local lobby view transition if network blocks
+                document.getElementById('displayRoomCode').innerText = currentRoomId;
+                document.getElementById('hostControls').classList.remove('hidden');
+                document.getElementById('guestWaiting').classList.add('hidden');
+                roomData = {
+                    roomId: currentRoomId,
+                    status: 'waiting',
+                    hostId: window.userId,
+                    players: initialPlayers,
+                    currentRound: 1,
+                    maxRounds: 5
+                };
+                updateLobbyUI();
+                switchView('lobby');
+            }
+        }
+
+        async function joinRoom() {
+            const nameInput = document.getElementById('inputName').value.trim();
+            const codeInput = document.getElementById('inputRoomCode').value.trim().toUpperCase();
+
+            if (!nameInput) {
+                showModal("請輸入暱稱", "請先輸入您的可愛暱稱才能加入房間！", "🍓");
+                return;
+            }
+            if (!codeInput || codeInput.length < 4) {
+                showModal("請輸入房間碼", "請輸入正確的 4 碼房間代碼！", "⚠️");
+                return;
+            }
+
+            myName = nameInput;
+            document.getElementById('displayMyName').innerText = myName;
+            document.getElementById('userInfoBadge').classList.remove('hidden');
+            currentRoomId = codeInput;
+            isHost = false;
+
+            if (window.firebaseReadyPromise) {
+                await window.firebaseReadyPromise;
+            }
+            if (!window.userId) {
+                window.userId = 'user_' + Math.random().toString(36).substring(2, 9);
+            }
+
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-skribbl-app';
+
+            try {
+                if (window.db) {
+                    const roomRef = doc(window.db, 'artifacts', appId, 'public', 'data', 'rooms_' + currentRoomId);
+                    const snap = await getDoc(roomRef);
+                    
+                    if (snap.exists()) {
+                        const data = snap.data();
+                        const players = data.players || {};
+                        players[window.userId] = {
+                            name: myName,
+                            score: 0,
+                            isHost: false
+                        };
+                        await updateDoc(roomRef, { players });
+                    } else {
+                        // Create room if it doesn't exist yet so friends can join easily
+                        const initialPlayers = {};
+                        initialPlayers[window.userId] = {
+                            name: myName,
+                            score: 0,
+                            isHost: true
+                        };
+                        isHost = true;
+                        await setDoc(roomRef, {
+                            roomId: currentRoomId,
+                            status: 'waiting',
+                            hostId: window.userId,
+                            players: initialPlayers,
+                            currentRound: 1,
+                            maxRounds: 5,
+                            painterId: window.userId,
+                            word: '',
+                            hint: ''
+                        });
+                    }
+                    listenToRoom(currentRoomId);
+                }
+
+                document.getElementById('displayRoomCode').innerText = currentRoomId;
+                if (isHost) {
+                    document.getElementById('hostControls').classList.remove('hidden');
+                    document.getElementById('guestWaiting').classList.add('hidden');
+                } else {
+                    document.getElementById('hostControls').classList.add('hidden');
+                    document.getElementById('guestWaiting').classList.remove('hidden');
+                }
+                switchView('lobby');
+            } catch (e) {
+                console.error("Error joining room:", e);
+                // Fallback transition
+                document.getElementById('displayRoomCode').innerText = currentRoomId;
+                document.getElementById('guestWaiting').classList.remove('hidden');
+                switchView('lobby');
+            }
+        }
+
+        function copyRoomCode() {
+            navigator.clipboard.writeText(currentRoomId);
+            showModal("已複製", "房間代碼已複製到剪貼簿，快傳給朋友吧！", "📋");
+        }
+
+        function listenToRoom(roomId) {
+            if (!window.db) return;
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-skribbl-app';
+            const roomRef = doc(window.db, 'artifacts', appId, 'public', 'data', 'rooms_' + roomId);
+
+            roomUnsubscribe = onSnapshot(roomRef, (docSnap) => {
+                if (!docSnap.exists()) return;
+                roomData = docSnap.data();
+                updateLobbyUI();
+                checkGameState();
+            }, (error) => {
+                console.error("Room snapshot error:", error);
+            });
+
+            const strokesRef = doc(window.db, 'artifacts', appId, 'public', 'data', 'strokes_' + roomId);
+            strokesUnsubscribe = onSnapshot(strokesRef, (snap) => {
+                if (snap.exists()) {
+                    const data = snap.data();
+                    if (data.strokes && ctx) {
+                        redrawCanvas(data.strokes);
+                    }
+                }
+            });
+
+            const chatRef = doc(window.db, 'artifacts', appId, 'public', 'data', 'chat_' + roomId);
+            chatsUnsubscribe = onSnapshot(chatRef, (snap) => {
+                if (snap.exists()) {
+                    const data = snap.data();
+                    renderChats(data.messages || []);
+                }
+            });
+        }
+
+        function updateLobbyUI() {
+            if (!roomData) return;
+            const players = roomData.players || {};
+            const playerKeys = Object.keys(players);
+            document.getElementById('playerCount').innerText = playerKeys.length;
+
+            let html = '';
+            playerKeys.forEach((uid, index) => {
+                const p = players[uid];
+                const isMe = uid === window.userId;
+                const avatars = ['🐱', '🐰', '🦊', '🐼', '🐨', '🦁', '🐯'];
+                const avatar = avatars[index % avatars.length];
+
+                html += `
+                    <div class="flex items-center justify-between p-3 rounded-2xl bg-pink-50/50 chunky-box-sm">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-xl bg-white chunky-box-sm flex items-center justify-center text-xl shadow-none">
+                                ${avatar}
+                            </div>
+                            <span class="font-black text-slate-800">${p.name} ${isMe ? '(你)' : ''}</span>
+                        </div>
+                        <div>
+                            ${p.isHost ? '<span class="bg-amber-200 text-amber-900 text-xs font-black px-3 py-1 rounded-full chunky-box-sm">👑 房主</span>' : '<span class="bg-slate-100 text-slate-600 text-xs font-black px-3 py-1 rounded-full chunky-box-sm">玩家</span>'}
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('playersList').innerHTML = html;
+        }
+
+        async function startGame() {
+            if (!roomData) return;
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-skribbl-app';
+            const roomRef = doc(window.db, 'artifacts', appId, 'public', 'data', 'rooms_' + currentRoomId);
+
+            const playerIds = Object.keys(roomData.players);
+            const firstPainter = playerIds[0];
+            const randomWord = WORD_POOL[Math.floor(Math.random() * WORD_POOL.length)];
+            const hint = generateHint(randomWord);
+
+            try {
+                await updateDoc(roomRef, {
+                    status: 'playing',
+                    currentRound: 1,
+                    painterId: firstPainter,
+                    word: randomWord,
+                    hint: hint
+                });
+
+                await setDoc(doc(window.db, 'artifacts', appId, 'public', 'data', 'strokes_' + currentRoomId), { strokes: [] });
+                await setDoc(doc(window.db, 'artifacts', appId, 'public', 'data', 'chat_' + currentRoomId), { messages: [{ sender: '系統', text: '🎮 遊戲正式開始！第一回合開始作畫！', time: Date.now() }] });
+            } catch (e) {
+                console.error("Start game error:", e);
+                // Local fallback start
+                roomData.status = 'playing';
+                roomData.currentRound = 1;
+                roomData.painterId = firstPainter;
+                roomData.word = randomWord;
+                roomData.hint = hint;
+                switchView('game');
+                initCanvasIfNeeded();
+                updateGameUI();
+            }
+        }
+
+        function generateHint(word) {
+            let hint = '';
+            for (let i = 0; i < word.length; i++) {
+                hint += i === 0 ? word.charAt(0) + ' ' : '⭐ ';
+            }
+            return hint.trim();
+        }
+
+        function checkGameState() {
+            if (!roomData) return;
+            if (roomData.status === 'playing') {
+                switchView('game');
+                initCanvasIfNeeded();
+                updateGameUI();
+            }
+        }
+
+        function initCanvasIfNeeded() {
+            if (canvas) return;
+            canvas = document.getElementById('paintCanvas');
+            ctx = canvas.getContext('2d');
+
+            canvas.width = 800;
+            canvas.height = 600;
+
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDrawing);
+            canvas.addEventListener('mouseleave', stopDrawing);
+
+            canvas.addEventListener('touchstart', handleTouch);
+            canvas.addEventListener('touchmove', handleTouch);
+            canvas.addEventListener('touchend', stopDrawing);
+        }
+
+        function startDrawing(e) {
+            if (roomData && roomData.painterId !== window.userId) return;
+            isDrawing = true;
+            const rect = canvas.getBoundingClientRect();
+            lastX = (e.clientX - rect.left) * (canvas.width / rect.width);
+            lastY = (e.clientY - rect.top) * (canvas.height / rect.height);
+        }
+
+        async function draw(e) {
+            if (!isDrawing || (roomData && roomData.painterId !== window.userId)) return;
+            const rect = canvas.getBoundingClientRect();
+            const currentX = (e.clientX - rect.left) * (canvas.width / rect.width);
+            const currentY = (e.clientY - rect.top) * (canvas.height / rect.height);
+
+            const newStroke = {
+                x0: lastX,
+                y0: lastY,
+                x1: currentX,
+                y1: currentY,
+                color: currentBrushColor,
+                size: currentBrushSize
+            };
+
+            lastX = currentX;
+            lastY = currentY;
+
+            await pushStroke(newStroke);
+        }
+
+        function handleTouch(e) {
+            if (roomData && roomData.painterId !== window.userId) return;
+            e.preventDefault();
+            const touch = e.touches[0];
+            const mouseEvent = new MouseEvent(e.type === 'touchstart' ? 'mousedown' : e.type === 'touchmove' ? 'mousemove' : 'mouseup', {
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+            canvas.dispatchEvent(mouseEvent);
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+        }
+
+        async function pushStroke(stroke) {
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-skribbl-app';
+            const strokesRef = doc(window.db, 'artifacts', appId, 'public', 'data', 'strokes_' + currentRoomId);
+            try {
+                if (!window.currentStrokes) window.currentStrokes = [];
+                window.currentStrokes.push(stroke);
+                if (window.currentStrokes.length > 500) window.currentStrokes.shift();
+                await setDoc(strokesRef, { strokes: window.currentStrokes });
+            } catch (e) {
+                console.error("Error pushing stroke:", e);
+            }
+        }
+
+        async function clearCanvasAction() {
+            if (roomData && roomData.painterId !== window.userId) return;
+            window.currentStrokes = [];
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-skribbl-app';
+            const strokesRef = doc(window.db, 'artifacts', appId, 'public', 'data', 'strokes_' + currentRoomId);
+            try {
+                await setDoc(strokesRef, { strokes: [] });
+            } catch (e) {
+                if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+
+        function redrawCanvas(strokes) {
+            if (!ctx) return;
+            window.currentStrokes = strokes;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            strokes.forEach(s => {
+                ctx.beginPath();
+                ctx.moveTo(s.x0, s.y0);
+                ctx.lineTo(s.x1, s.y1);
+                ctx.strokeStyle = s.color;
+                ctx.lineWidth = s.size;
+                ctx.stroke();
+            });
+        }
+
+        function setBrushColor(color) {
+            currentBrushColor = color;
+        }
+
+        function setBrushSize(size) {
+            currentBrushSize = parseInt(size);
+        }
+
+        function updateGameUI() {
+            if (!roomData) return;
+            const isPainter = roomData.painterId === window.userId;
+            
+            document.getElementById('currentRoundText').innerText = roomData.currentRound || 1;
+            document.getElementById('maxRoundText').innerText = roomData.maxRounds || 5;
+
+            const wordDisplay = document.getElementById('wordDisplay');
+            const painterTools = document.getElementById('painterTools');
+            const overlay = document.getElementById('notPainterOverlay');
+
+            if (isPainter) {
+                wordDisplay.innerText = `🎨 題目：${roomData.word}`;
+                painterTools.classList.remove('hidden');
+                overlay.classList.add('hidden');
+            } else {
+                wordDisplay.innerText = `💡 提示：${roomData.hint}`;
+                painterTools.classList.add('hidden');
+                overlay.classList.remove('hidden');
+                const painterName = (roomData.players && roomData.players[roomData.painterId]) ? roomData.players[roomData.painterId].name : '畫家';
+                document.getElementById('currentPainterName').innerText = painterName;
+            }
+
+            let scoreHtml = '';
+            const players = roomData.players || {};
+            Object.values(players).forEach(p => {
+                scoreHtml += `
+                    <div class="flex justify-between items-center bg-pink-50/40 px-3 py-2 rounded-xl chunky-box-sm text-sm">
+                        <span class="font-black text-slate-700">🐱 ${p.name}</span>
+                        <span class="font-black text-pink-600">${p.score || 0} 分 ⭐</span>
+                    </div>
+                `;
+            });
+            document.getElementById('scoreboardList').innerHTML = scoreHtml;
+        }
+
+        async function sendGuess() {
+            const input = document.getElementById('inputGuess');
+            const text = input.value.trim();
+            if (!text) return;
+            input.value = '';
+
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-skribbl-app';
+            const chatRef = doc(window.db, 'artifacts', appId, 'public', 'data', 'chat_' + currentRoomId);
+
+            let isCorrect = false;
+            if (roomData && roomData.status === 'playing' && roomData.painterId !== window.userId) {
+                if (text === roomData.word) {
+                    isCorrect = true;
+                }
+            }
+
+            try {
+                const snap = await getDoc(chatRef);
+                let messages = snap.exists() ? (snap.data().messages || []) : [];
+                
+                messages.push({
+                    sender: myName,
+                    text: isCorrect ? `🎉 太神啦！猜對了！答案就是「${roomData.word}」！` : text,
+                    isCorrect: isCorrect,
+                    time: Date.now()
+                });
+
+                if (messages.length > 50) messages.shift();
+
+                await setDoc(chatRef, { messages });
+
+                if (isCorrect && isHost) {
+                    handleCorrectGuess();
+                }
+            } catch (e) {
+                console.error("Send chat error:", e);
+            }
+        }
+
+        function handleGuessKey(e) {
+            if (e.key === 'Enter') sendGuess();
+        }
+
+        async function handleCorrectGuess() {
+            if (!roomData) return;
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-skribbl-app';
+            const roomRef = doc(window.db, 'artifacts', appId, 'public', 'data', 'rooms_' + currentRoomId);
+
+            const players = roomData.players;
+            if (players[window.userId]) {
+                players[window.userId].score = (players[window.userId].score || 0) + 10;
+            }
+            if (players[roomData.painterId]) {
+                players[roomData.painterId].score = (players[roomData.painterId].score || 0) + 5;
+            }
+
+            const nextRound = (roomData.currentRound || 1) + 1;
+            if (nextRound > (roomData.maxRounds || 5)) {
+                await updateDoc(roomRef, {
+                    status: 'ended',
+                    players: players
+                });
+                showModal("🏆 遊戲大獲全勝！", "所有回合已圓滿結束，大家都是畫畫天才！", "🎉");
+            } else {
+                const playerIds = Object.keys(players);
+                const nextPainterIndex = (playerIds.indexOf(roomData.painterId) + 1) % playerIds.length;
+                const nextPainter = playerIds[nextPainterIndex];
+                const randomWord = WORD_POOL[Math.floor(Math.random() * WORD_POOL.length)];
+                const hint = generateHint(randomWord);
+
+                await updateDoc(roomRef, {
+                    currentRound: nextRound,
+                    painterId: nextPainter,
+                    word: randomWord,
+                    hint: hint
+                });
+                await setDoc(doc(window.db, 'artifacts', appId, 'public', 'data', 'strokes_' + currentRoomId), { strokes: [] });
+            }
+        }
+
+        function renderChats(messages) {
+            const chatDiv = document.getElementById('chatMessages');
+            let html = '';
+            messages.forEach(m => {
+                const isSystem = m.sender === '系統';
+                const isCorrect = m.isCorrect;
+                if (isSystem) {
+                    html += `<div class="text-center text-xs font-black text-indigo-600 bg-indigo-50 py-1.5 px-2 rounded-xl chunky-box-sm">${m.text}</div>`;
+                } else if (isCorrect) {
+                    html += `<div class="text-center text-xs font-black text-emerald-700 bg-emerald-100 py-2 px-3 rounded-2xl chunky-box-sm shadow-sm">${m.text}</div>`;
+                } else {
+                    html += `<div class="text-xs font-bold"><span class="text-pink-600">${m.sender}:</span> <span class="text-slate-700">${m.text}</span></div>`;
+                }
+            });
+            chatDiv.innerHTML = html;
+            chatDiv.scrollTop = chatDiv.scrollHeight;
+        }
+    </script>
+</body>
+</html>
